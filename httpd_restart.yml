@@ -1,0 +1,35 @@
+- hosts: all
+  tasks:
+    - name: "installing httpd"
+      package:
+         name: httpd
+         state: present
+
+    - name: "Document Root"
+      file:
+         state: directory
+         path: /var/www/teja
+
+    - name: "httpd conf file"
+      copy:
+          src: /root/httpd.conf
+          dest: /etc/httpd/conf.d/web.conf
+      register: result
+
+    - name: "copying web page"
+      copy:
+          src: /root/web.html
+          dest: /var/www/teja
+
+    - name: "firewalld service"
+      firewalld:
+          port: 8080/tcp
+          state: enabled
+          immediate: yes
+          permanent: yes
+
+    - name: "restarting services"
+      service: 
+         name: "httpd"
+         state: restarted
+      when: result.changed
